@@ -1,0 +1,23 @@
+{
+    "CN": "*.myorg.com",
+    "hosts": [
+      "*.myorg.com",
+      "kafka-bootstrap.myorg.com",
+      "mds.myorg.com",
+      "kafka.confluent.svc.cluster.local",
+      "*.kafka.confluent.svc.cluster.local"
+   ],
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "England",
+        "L": "London",
+        "O": "AF",
+        "ST": "London",
+        "OU": "PS"
+      }
+    ]
+  }

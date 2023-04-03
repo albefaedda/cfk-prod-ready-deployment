@@ -1,0 +1,16 @@
+{
+    "CN": "MYORG-CA",
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "England",
+        "L": "London",
+        "O": "MYORG",
+        "ST": "London",
+        "OU": "PS"
+      }
+    ]
+  }

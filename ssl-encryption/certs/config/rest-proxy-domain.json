@@ -1,0 +1,20 @@
+{
+    "CN": "*.myorg.com",
+    "hosts": [
+      "kafkarestproxy.myorg.com",
+      "*.kafkarestproxy.confluent.svc.cluster.local"
+    ],
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "England",
+        "L": "London",
+        "O": "AF",
+        "ST": "London",
+        "OU": "PS"
+      }
+    ]
+  }

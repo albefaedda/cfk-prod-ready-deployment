@@ -1,0 +1,21 @@
+{
+    "CN": "*.myorg.com",
+    "hosts": [
+      "connect.myorg.com",
+      "connect.confluent.svc.cluster.local",
+      "*.connect.confluent.svc.cluster.local"
+    ],
+    "key": {
+      "algo": "rsa",
+      "size": 2048
+    },
+    "names": [
+      {
+        "C": "England",
+        "L": "London",
+        "O": "AF",
+        "ST": "London",
+        "OU": "PS"
+      }
+    ]
+  }
