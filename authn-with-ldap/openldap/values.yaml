@@ -1,0 +1,171 @@
+name: ldap
+image: osixia/openldap:1.5.0
+tls:
+  enabled: true
+  fullchain: |-
+  privkey: |-
+  cacerts: |-
+env:
+  LDAP_ORGANISATION: "MyOrg Inc."
+  LDAP_DOMAIN: "myorg.com"
+  LDAP_ADMIN_PASSWORD: "confluentrox"
+  LDAP_CONFIG_PASSWORD: "confluentconfigrox"
+  LDAP_READONLY_USER: "true"
+  LDAP_READONLY_USER_USERNAME: "mds-dev"
+  LDAP_READONLY_USER_PASSWORD: "UA8$_iN@gha$"
+  LDAP_BASE_DN: "dc=myorg,dc=com"
+
+# Adding integer before ldif name to allow sequence order.
+ldifs:
+  # OUs
+  000_groupou.ldif: |-
+    dn: ou=me,dc=myorg,dc=com
+    objectClass: organizationalUnit
+    ou: Users
+    # All Users
+
+    dn: ou=users,ou=me,dc=myorg,dc=com
+    objectClass: organizationalUnit
+    ou: Users
+    # Org Users
+
+    dn: ou=generic,ou=me,dc=myorg,dc=com
+    objectClass: organizationalUnit
+    ou: Groups
+    # Generic Groups
+
+    dn: ou=groups,ou=generic,ou=me,dc=myorg,dc=com
+    objectClass: organizationalUnit
+    ou: Groups
+    # Org Groups
+
+    dn: ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    objectClass: organizationalUnit
+    ou: Users
+    # Sys Users
+  001_readonlyusersgroup.ldif: |-
+    dn: cn=readonlyusers,ou=groups,ou=generic,ou=me,dc=myorg,dc=com
+    objectClass: top
+    objectClass: posixGroup
+    cn: readonlyusers
+    gidNumber: 5000
+  002_c3usersgroup.ldif: |-
+    dn: cn=c3users,ou=groups,ou=generic,ou=me,dc=myorg,dc=com
+    objectClass: top
+    objectClass: posixGroup
+    cn: c3users
+    gidNumber: 5000
+  010_kafka-dev.ldif: |-
+    dn: cn=kafka-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: DOf;@|{U5xGd
+    description: kafka user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: kafka-dev
+  011_restproxy-dev.ldif: |-
+    dn: cn=restproxy-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: h5l[.ClX1>Gy
+    description: erp user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: restproxy-dev
+  012_schemaregistry-dev.ldif: |-
+    dn: cn=schemaregistry-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: #c!a0<=V0@XY
+    description: schema registry user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: schemaregistry-dev
+  013_controlcenter-dev.ldif: |-
+    dn: cn=controlcenter-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: ym5G=1RM9]P]
+    description: control center user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: controlcenter-dev
+  014_ksql-dev.ldif: |-
+    dn: cn=ksql-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: wSz#8:%pGvNG
+    description: ksql user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: ksql-dev
+  015_connect-dev.ldif: |-
+    dn: cn=connect-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: kXL!r.dr9|pF
+    description: connect user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: connect-dev
+  016_replicator.ldif: |-
+    dn: cn=replicator,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: replicator-secret
+    description: replicator user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: replicator
+  017_adminrest-dev.ldif: |-
+    dn: cn=adminrest-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: ,=_PvxK94~VK
+    description: krp user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: adminrest-dev
+  018_c3-test.ldif: |-
+    dn: cn=testadmin,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: testadmin
+    description: testadmin user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: testadmin
+  030_dev-user.ldif: |-
+    dn: cn=devuser,ou=system,ou=generic,ou=me,dc=myorg,dc=com
+    userPassword: dev-password
+    description: Developer user
+    objectClass: simpleSecurityObject
+    objectClass: organizationalRole
+    cn: devuser
+  100_alice.ldif:  |-
+    dn: cn=alice,ou=users,ou=me,dc=myorg,dc=com
+    objectClass: inetOrgPerson
+    objectClass: posixAccount
+    objectClass: shadowAccount
+    objectClass: organizationalRole
+    uid: alice
+    sn: LookingGlass
+    givenName: Alice
+    cn: alice
+    displayName: Alice LookingGlass
+    uidNumber: 10000
+    gidNumber: 5000
+    userPassword: alice-secret
+    gecos: alice
+    loginShell: /bin/bash
+    homeDirectory: /home/alice
+  101_james.ldif:  |-
+    dn: cn=james,ou=users,ou=me,dc=myorg,dc=com
+    objectClass: inetOrgPerson
+    objectClass: posixAccount
+    objectClass: shadowAccount
+    objectClass: organizationalRole
+    uid: james
+    sn: LookingGlass
+    givenName: James
+    cn: james
+    displayName: James Logan
+    uidNumber: 10009
+    gidNumber: 5000
+    userPassword: james-secret
+    gecos: james
+    loginShell: /bin/bash
+    homeDirectory: /home/james
+  200_addgroup.ldif:  |-
+    dn: cn=readonlyusers,ou=groups,ou=generic,ou=me,dc=myorg,dc=com
+    changetype: modify
+    add: memberuid
+    memberuid: cn=alice,ou=users,ou=me,dc=myorg,dc=com
+
+    dn: cn=c3users,ou=groups,ou=generic,ou=me,dc=myorg,dc=com
+    changetype: modify
+    add: memberuid
+    memberuid: cn=james,ou=users,ou=me,dc=myorg,dc=com
