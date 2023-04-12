@@ -1,8 +1,6 @@
 ## SSL encryption deployment
 
-### Create SSL/TLS Certificates
-
-#### Create Certificate Authority
+### Create Certificate Authority
 
 This command creates a `ca-key.pem`, `ca.csr` and `ca.pem` in path `ssl-encryption/certs/generated/ca`
 
@@ -14,6 +12,8 @@ Validate Certificate Authority using the command `openssl x509 -in security/tls/
 #### Create Certificates (with appropriate [SANs](https://docs.confluent.io/operator/current/co-network-encryption.html#configure-network-encryption-with-co-long)) for each component
 
 - Example for Zookeeper certificate
+
+### Create SSL/TLS Certificate (e.g. ZooKeeper)
 
 This command creates zk.pem, zk-key.pem and zk.csr
 
@@ -44,7 +44,7 @@ Repeat the same procedure for the other components (Kafka, Schema Registry, Conn
 
 --- 
 
-### Deploy the updated components
+## Deploy the updated components
 
 Update the CRs for each component, including the reference to the secret for the TLS certificate.
 Add the configuration regarding internal and external communication with domain information. 
@@ -52,24 +52,22 @@ Update dependencies for each component to take into account the TSL.
 
 ZK and Brokers:
 ```sh
-kubectl apply of ssl-encryption/deployment/zk+brokers.yaml
+kubectl apply -f ssl-encryption/deployment/zk+brokers.yaml
 ```
 
 Other CP Components: 
 ```sh
-kubectl apply of ssl-encryption/deployment/other-cp-components.yaml
+kubectl apply -f ssl-encryption/deployment/other-cp-components.yaml
 ```
 
 ---
 
-### Testing
+## Testing
 
 Now that our components are exposed to the outside world in a secured way (TLS), we can run some tests by reaching the components from outside Kubernetes. 
 
 We can verify that Control Center is up and running by calling it from our browser at `https://controlcenter.myorg.com`
-
 We can then create a topic, and produce and consume some messages using the command line tools:
-
 This time, to be able to connect to kafka, we need to provide the certificates.
 
 Let's create a file containing information about the certificates:
@@ -95,11 +93,13 @@ ssl.truststore.type=PEM
 ssl.truststore.location=/path/to/kafka.pem
 ```
 
+Let's save this file as `ssl-client.properties`.
+
 List Topics:
 
 ```sh
 kafka-topics --bootstrap-server kafka-bootstrap.myorg.com:9092 --list \
-  --command-config ssl-encryption/ssl-client.properties
+  --command-config configs/ssl-client.properties
 ```
 
 Create a topic:
@@ -107,23 +107,23 @@ Create a topic:
 ```sh
 kafka-topics --bootstrap-server kafka-bootstrap.myorg.com:9092 --create \
   --topic test-topic --replication-factor 3 \
-  --partitions 1 --command-config ssl-encryption/ssl-client.properties
+  --partitions 1 --command-config configs/ssl-client.properties
 ```
 
 Produce some messages: 
 
 ```sh
 kafka-console-producer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
-  --topic test-topic --producer.config ssl-encryption/ssl-client.properties
-> <write your messages here>
+  --topic test-topic --producer.config configs/ssl-client.properties \
+ <write your messages here>
 ```
 
 Consume some messages: 
 
 ```sh
 kafka-console-consumer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
-  --topic test-topic --from-beginning --consumer.config ssl-encryption/ssl-client.properties
-<the messages in the topic will be shown here>
+  --topic test-topic --from-beginning --consumer.config configs/ssl-client.properties \
+ <the messages in the topic will be shown here>
 ```
 
 
@@ -131,12 +131,12 @@ Produce some Avro messages:
 
 ```sh
 kafka-avro-console-producer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
-  --topic test-topic --producer.config ssl-encryption/ssl-client.properties
+  --topic test-topic --producer.config configs/ssl-client.properties
   --property schema.registry.url=https://schemaregistry.myorg.com \
   --property value.schema="$(< clients/schema/example-schema.json)" \
   --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/sr.pem \
   --property schema.registry.ssl.truststore.type=PEM
-> <write your messages here>
+ <write your messages here>
 ```
 
 
@@ -148,6 +148,6 @@ kafka-avro-console-consumer --bootstrap-server <your-kafka-bootstrap-server> \
   --property schema.registry.url=https://schemaregistry.myorg.com \
   --property value.schema="$(< clients/schema/example-schema.json)" \
   --property schema.registry.ssl.truststore.type=PEM \
-  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/sr.pem
-  --consumer.config ssl-encryption/ssl-client.properties
+  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/sr.pem \
+  --consumer.config configs/ssl-client.properties
 ```
