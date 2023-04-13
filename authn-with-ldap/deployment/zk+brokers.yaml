@@ -43,7 +43,7 @@ spec:
   storageClass:
     name: production-storage-class
   tls:
-    secretRef: tls-cert
+    secretRef: zk-tls-cert
 ---
 apiVersion: platform.confluent.io/v1beta1
 kind: Kafka
@@ -97,13 +97,13 @@ spec:
         groupNameAttribute: cn
         groupObjectClass: posixGroup
         groupMemberAttribute: memberuid
-        groupMemberAttributePattern: cn=(.*),ou=.*,ou=.*,ou=ae,dc=test,dc=com
-        groupSearchBase: ou=ae,dc=test,dc=com
+        groupMemberAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
+        groupSearchBase: ou=me,dc=myorg,dc=com
         groupSearchScope: 2
         userNameAttribute: cn
-        userMemberOfAttributePattern: cn=(.*),ou=.*,ou=.*,ou=ae,dc=test,dc=com
+        userMemberOfAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
         userObjectClass: organizationalRole
-        userSearchBase: ou=ae,dc=test,dc=com
+        userSearchBase: ou=me,dc=myorg,dc=com
         userSearchScope: 2
   listeners:
     internal:
