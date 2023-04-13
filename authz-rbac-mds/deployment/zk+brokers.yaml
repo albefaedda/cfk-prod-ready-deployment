@@ -1,0 +1,161 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-zookeeper:7.3.1
+    init: confluentinc/confluent-init-container:2.5.1
+  authentication:
+    type: digest
+    jaasConfig:
+      secretRef: zk-digest-users
+  podTemplate:
+    resources:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: zookeeper
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - kafka
+          topologyKey: kubernetes.io/hostname  
+  dataVolumeCapacity: 1Gi
+  logVolumeCapacity: 1Gi
+  storageClass:
+    name: production-storage-class
+  tls:
+    secretRef: zk-tls-cert
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-server:7.3.1
+    init: confluentinc/confluent-init-container:2.5.1
+  podTemplate:
+    resources:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: kafka
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - zookeeper
+          topologyKey: kubernetes.io/hostname
+  dataVolumeCapacity: 2Gi
+  storageClass:
+    name: production-storage-class
+  tls:
+    secretRef: kafka-tls-cert
+  services:
+    mds: 
+      tokenKeyPair:
+        secretRef: mds-token
+      provider:
+        type: ldap
+        ldap: 
+          address: ldap://ldap.confluent.svc.cluster.local:389
+          authentication:
+            type: simple
+            simple:
+              secretRef: ldap-creds   # the same secret created earlier as part of the authentication
+          configurations:
+            groupNameAttribute: cn
+            groupObjectClass: posixGroup
+            groupMemberAttribute: memberuid
+            groupMemberAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
+            groupSearchBase: ou=me,dc=myorg,dc=com
+            groupSearchScope: 2
+            userNameAttribute: cn
+            userMemberOfAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
+            userObjectClass: organizationalRole
+            userSearchBase: ou=me,dc=myorg,dc=com
+            userSearchScope: 2
+  authorization:
+    type: rbac
+    superUsers:
+      - "User:kafka-dev"
+      - "User:adminrest-dev"
+  listeners:
+    internal:
+      authentication:
+        type: ldap       
+        jaasConfig:               
+          secretRef: kafka-ldap-user 
+      tls:
+        enabled: true
+    external:
+      externalAccess:
+        type: loadBalancer
+        loadBalancer:
+          domain: myorg.com
+          brokerPrefix: kafka
+          bootstrapPrefix: kafka-bootstrap
+      authentication:
+        type: ldap
+      tls:
+        enabled: true
+  dependencies:
+    zookeeper: 
+      endpoint: zookeeper.confluent.svc.cluster.local:2182
+      authentication:
+        type: digest
+        jaasConfig:
+          secretRef: kafka-digest-user-for-zk
+      tls:
+        enabled: true
+    kafkaRest: 
+      authentication:
+        type: bearer 
+        bearer:
+          secretRef: kafka-mds-client
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaRestClass
+metadata:
+  name: default
+  namespace: confluent
+spec:
+  kafkaRest:
+    authentication:
+      type: bearer               
+      bearer:
+        secretRef: rest-credential

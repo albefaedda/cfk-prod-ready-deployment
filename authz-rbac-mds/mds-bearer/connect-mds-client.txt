@@ -1,0 +1,2 @@
+username=connect-dev
+password=kXL!r.dr9|pF

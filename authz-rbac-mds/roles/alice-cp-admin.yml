@@ -1,0 +1,74 @@
+---
+# rolebinding `alice-kafka-cluster-admin` allows `alice` to see kafkaCluster
+apiVersion: platform.confluent.io/v1beta1
+kind: ConfluentRolebinding
+metadata:
+  name: alice-kafka-cluster-admin
+  namespace: confluent
+spec:
+  principal:
+    type: user
+    name: alice
+  role: ClusterAdmin
+  ## if use other kafkaRestClass except for default, need to configure accordingly
+  #kafkaRestClassRef:
+  # name: default
+---
+# rolebinding `alice-sr-admin` allows `alice` to see schemaregistry information
+# `schemaRegistryCllusterId` pattern: `id_<schemaregistry.name>_<namespace>`
+apiVersion: platform.confluent.io/v1beta1
+kind: ConfluentRolebinding
+metadata:
+  name: alice-sr-admin
+  namespace: confluent
+spec:
+  principal:
+    type: user
+    name: alice
+  clustersScopeByIds:
+    schemaRegistryClusterId: id_schemaregistry_confluent
+  role: SystemAdmin
+  ## if use other kafkaRestClass except for default, need to configure accordingly
+  #kafkaRestClassRef:
+  # name: default
+---
+# rolebinding `alice-connect-admin` allows `alice` to see connect cluster
+# `connectClusterId` pattern: `<namespace>.<connect.name>`
+apiVersion: platform.confluent.io/v1beta1
+kind: ConfluentRolebinding
+metadata:
+  name: alice-connect-admin
+  namespace: confluent
+spec:
+  principal:
+    type: user
+    name: alice
+  clustersScopeByIds:
+    connectClusterId: confluent.connect
+  role: SystemAdmin
+  ## if use other kafkaRestClass except for default, need to configure accordingly
+  #kafkaRestClassRef:
+  # name: default
+---
+# rolebinding `alice-ksql-owner` allows `alice` to see ksqldb cluster
+# `ksqlClusterId` pattern: `<namespace>.<ksqldb.name>`
+apiVersion: platform.confluent.io/v1beta1
+kind: ConfluentRolebinding
+metadata:
+  name: alice-ksql-owner
+  namespace: confluent
+spec:
+  principal:
+    type: user
+    name: alice
+  clustersScopeByIds:
+    ksqlClusterId: confluent.ksqldb_
+  role: ResourceOwner
+  resourcePatterns:
+    - name: ksql-cluster
+      patternType: LITERAL
+      resourceType: KsqlCluster
+  ## if use other kafkaRestClass except for default, need to configure accordingly
+  #kafkaRestClassRef:
+  # name: default
+---

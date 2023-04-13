@@ -1,0 +1,19 @@
+# rolebinding `test-topics-owner` gives user `testadmin` the role 
+# `ResourceOwner` for topics prefixed with `test`
+apiVersion: platform.confluent.io/v1beta1
+kind: ConfluentRolebinding
+metadata:
+  name: test-topics-owner
+  namespace: confluent
+spec:
+  principal:
+    name: testadmin
+    type: user
+  resourcePatterns:
+  - name: test
+    patternType: PREFIXED
+    resourceType: Topic
+  role: ResourceOwner
+  ## if use other kafkaRestClass except for default, need to configure accordingly
+  #kafkaRestClassRef:
+  # name: default

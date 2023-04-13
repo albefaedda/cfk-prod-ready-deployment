@@ -1,0 +1,2 @@
+username=schemaregistry-dev
+password=#c!a0<=V0@XY

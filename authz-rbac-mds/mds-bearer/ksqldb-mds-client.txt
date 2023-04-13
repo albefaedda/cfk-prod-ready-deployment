@@ -1,0 +1,2 @@
+username=ksql-dev
+password=wSz#8:%pGvNG
