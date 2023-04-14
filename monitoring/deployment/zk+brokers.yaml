@@ -1,0 +1,398 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-zookeeper:7.3.1
+    init: confluentinc/confluent-init-container:2.5.1
+  metrics:
+    prometheus:
+      rules:
+        - labels:
+            client_address: $4
+            connection_id: $5
+            member_type: $3
+            server_id: $2
+            server_name: $1
+          name: zookeeper_connections_$6
+          pattern: org.apache.ZooKeeperService<name0=(.+), name1=replica.(\d+), name2=(\w+),
+            name3=Connections, name4=(.+), name5=(.+)><>([^:]+)
+          valueFactor: 1
+        - labels:
+            member_type: $3
+            server_id: $2
+            server_name: $1
+          name: zookeeper_$4
+          pattern: 'org.apache.ZooKeeperService<name0=(.+), name1=replica.(\d+), name2=(\w+)><>(\w+):
+              (\d+)'
+          valueFactor: 1
+        - labels:
+            member_type: $3
+            server_id: $2
+            server_name: $1
+          name: zookeeper_inmemorydatatree_$4
+          pattern: 'org.apache.ZooKeeperService<name0=(.+), name1=replica.(\d+), name2=(\w+),
+              name3=InMemoryDataTree><>(WatchCount|NodeCount): (\d+)'
+          type: GAUGE
+          valueFactor: 1
+        - labels:
+            $3: $4
+            server_id: $2
+            server_name: $1
+          name: zookeeper_status
+          pattern: 'org.apache.ZooKeeperService<name0=(.+), name1=replica.(\d+)><>(.+):
+              (.+)'
+          type: UNTYPED
+          value: "1"
+          valueFactor: 1
+        - labels:
+            server_id: $1
+          name: zookeeper_status_$2
+          pattern: 'org.apache.ZooKeeperService<name0=ReplicatedServer_id(\d+)><>(QuorumSize):
+              (\d+)'
+          type: GAUGE
+          valueFactor: 1
+        - labels:
+            server_id: "1"
+            server_name: $1
+          name: zookeeper_inmemorydatatree_$2
+          pattern: 'org.apache.ZooKeeperService<name0=(.+), name1=InMemoryDataTree><>(WatchCount|NodeCount):
+              (\d+)'
+          type: GAUGE
+          valueFactor: 1
+        - labels:
+            client_address: $2
+            connection_id: $3
+            server_name: $1
+          name: zookeeper_connections_$4
+          pattern: org.apache.ZooKeeperService<name0=(.+), name1=Connections, name2=(.+),
+            name3=(.+)><>([^:]+)
+          valueFactor: 1
+        - labels:
+            $2: $3
+            server_name: $1
+          name: zookeeper_$2
+          pattern: 'org.apache.ZooKeeperService<name0=(.+)><>(StartTime|ClientPort|SecureClientAddress|Version|SecureClientPort):
+              (.+)'
+          value: "1"
+          valueFactor: 1
+        - name: zookeeper_$2
+          pattern: 'org.apache.ZooKeeperService<name0=(.+)><>(.+): (.+)'
+          type: GAUGE
+          valueFactor: 1
+      whitelist:
+        - org.apache.ZooKeeperService:name3=Connections,*
+        - org.apache.ZooKeeperService:name3=InMemoryDataTree,*
+        - org.apache.ZooKeeperService:name0=*,name1=replica*,name2=*
+        - org.apache.ZooKeeperService:name0=*,name1=replica*
+        - org.apache.ZooKeeperService:name0=*
+        - org.apache.ZooKeeperService:name1=InMemoryDataTree,name0=*
+        - org.apache.ZooKeeperService:name0=*,name1=Connections,name2=*,name3=*
+  authentication:
+    type: digest
+    jaasConfig:
+      secretRef: zk-digest-users
+  podTemplate:
+    resources:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: zookeeper
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - kafka
+          topologyKey: kubernetes.io/hostname  
+  dataVolumeCapacity: 1Gi
+  logVolumeCapacity: 1Gi
+  storageClass:
+    name: production-storage-class
+  tls:
+    secretRef: zk-tls-cert
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    application: confluentinc/cp-server:7.3.1
+    init: confluentinc/confluent-init-container:2.5.1
+  metrics:
+    prometheus:
+      blacklist:
+        - kafka.consumer:type=*,id=*
+        - kafka.consumer:type=*,client-id=*
+        - kafka.consumer:type=*,client-id=*,node-id=*
+        - kafka.producer:type=*,id=*
+        - kafka.producer:type=*,client-id=*
+        - kafka.producer:type=*,client-id=*,node-id=*
+        - kafka.*:type=kafka-metrics-count,*
+        - kafka.admin.client:*
+        - kafka.server:type=*,cipher=*,protocol=*,listener=*,networkProcessor=*
+        - kafka.server:type=*
+      rules:
+        - labels:
+            partition: $5
+            topic: $4
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+), topic=(.+), partition=(.+)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            clientId: $3
+            partition: $5
+            topic: $4
+          name: kafka_server_$1_$2
+          pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), topic=(.+), partition=(.*)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            broker: $4:$5
+            clientId: $3
+          name: kafka_server_$1_$2
+          pattern: kafka.server<type=(.+), name=(.+), clientId=(.+), brokerHost=(.+),
+            brokerPort=(.+)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            $4: $5
+            $6: $7
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+), (.+)=(.+)><>(Count|Value)
+          valueFactor: "1"
+        - labels:
+            $4: $5
+            $6: $7
+            quantile: 0.$8
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.*), (.+)=(.+)><>(\d+)thPercentile
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            $3: $4
+            $5: $6
+            $7: $8
+          name: kafka_$1_$2
+          pattern: kafka.(\w+)<type=(.+), (.+)=(.+), (.+)=(.+), (.+)=(.+)><>Value
+          valueFactor: "1"
+        - labels:
+            $4: $5
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.+)><>(Count|Value)
+          valueFactor: "1"
+        - labels:
+            $3: $4
+            $5: $6
+          name: kafka_$1_$2
+          pattern: kafka.(\w+)<type=(.+), (.+)=(.+), (.+)=(.+)><>(Count|Value)
+          valueFactor: "1"
+        - name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+)><>(Count|Value)
+          valueFactor: "1"
+        - labels:
+            $3: $4
+          name: kafka_$1_$2
+          pattern: kafka.(\w+)<type=(.+), (.+)=(.+)><>Value
+          valueFactor: "1"
+        - name: kafka_server_kafkarequesthandlerpool_requesthandleravgidlepercent_total
+          pattern: kafka.server<type=KafkaRequestHandlerPool, name=RequestHandlerAvgIdlePercent><>OneMinuteRate
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            client_software_name: $1
+            client_software_version: $2
+            listener: $3
+            network_processor: $4
+          name: kafka_server_socketservermetrics_connections
+          pattern: kafka.server<type=socket-server-metrics, clientSoftwareName=(.+),
+            clientSoftwareVersion=(.+), listener=(.+), networkProcessor=(.+)><>connections
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            listener: $1
+            network_processor: $2
+          name: kafka_server_socketservermetrics_$3
+          pattern: 'kafka.server<type=socket-server-metrics, listener=(.+), networkProcessor=(.+)><>(.+):'
+          type: GAUGE
+          valueFactor: "1"
+        - name: kafka_coordinator_$1_$2_$3
+          pattern: kafka.coordinator.(\w+)<type=(.+), name=(.+)><>(Count|Value)
+          valueFactor: "1"
+        - labels:
+            $4: $5
+            quantile: 0.$6
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+), (.+)=(.*)><>(\d+)thPercentile
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            quantile: 0.$4
+          name: kafka_$1_$2_$3
+          pattern: kafka.(\w+)<type=(.+), name=(.+)><>(\d+)thPercentile
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            $3: $4
+            $5: $6
+            $7: $8
+          name: confluent_$1_$2
+          pattern: confluent.(\w+)<type=(.+), (.+)=(.+), (.+)=(.+), (.+)=(.+)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            $3: $4
+            $5: $6
+          name: confluent_$1_$2
+          pattern: confluent.(.+)<type=(.+), (.+)=(.+), (.+)=(.+)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            $3: $4
+          name: confluent_$1_$2
+          pattern: confluent.(.+)<type=(.+), (.+)=(.+)><>Value
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            client-id: $3
+            user: $2
+          name: kafka_server_$1_$4
+          pattern: 'kafka.server<type=(Produce|Fetch|Request), user=(.+), client-id=(.+)><>(.+):'
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            user: $2
+          name: kafka_server_$1_$3
+          pattern: 'kafka.server<type=(Produce|Fetch|Request), user=(.+)><>(.+):'
+          type: GAUGE
+          valueFactor: "1"
+        - labels:
+            client-id: $2
+          name: kafka_server_$1_$3
+          pattern: 'kafka.server<type=(Produce|Fetch|Request), client-id=(.+)><>(.+):'
+          type: GAUGE
+          valueFactor: "1"
+  podTemplate:
+    resources:
+      limits:
+        cpu: 2
+        memory: 2Gi
+      requests:
+        cpu: 1
+        memory: 2Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: kafka
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - zookeeper
+          topologyKey: kubernetes.io/hostname
+  dataVolumeCapacity: 2Gi
+  storageClass:
+    name: production-storage-class
+  tls:
+    secretRef: kafka-tls-cert
+  services:
+    mds: 
+      tokenKeyPair:
+        secretRef: mds-token
+      provider:
+        type: ldap
+        ldap: 
+          address: ldap://ldap.confluent.svc.cluster.local:389
+          authentication:
+            type: simple
+            simple:
+              secretRef: ldap-creds   # the same secret created earlier as part of the authentication
+          configurations:
+            groupNameAttribute: cn
+            groupObjectClass: posixGroup
+            groupMemberAttribute: memberuid
+            groupMemberAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
+            groupSearchBase: ou=me,dc=myorg,dc=com
+            groupSearchScope: 2
+            userNameAttribute: cn
+            userMemberOfAttributePattern: cn=(.*),ou=.*,ou=.*,ou=me,dc=myorg,dc=com
+            userObjectClass: organizationalRole
+            userSearchBase: ou=me,dc=myorg,dc=com
+            userSearchScope: 2
+  authorization:
+    type: rbac
+    superUsers:
+      - "User:kafka-dev"
+      - "User:adminrest-dev"
+  listeners:
+    internal:
+      authentication:
+        type: ldap       
+        jaasConfig:               
+          secretRef: kafka-ldap-user 
+      tls:
+        enabled: true
+    external:
+      externalAccess:
+        type: loadBalancer
+        loadBalancer:
+          domain: myorg.com
+          brokerPrefix: kafka
+          bootstrapPrefix: kafka-bootstrap
+      authentication:
+        type: ldap
+      tls:
+        enabled: true
+  dependencies:
+    zookeeper: 
+      endpoint: zookeeper.confluent.svc.cluster.local:2182
+      authentication:
+        type: digest
+        jaasConfig:
+          secretRef: kafka-digest-user-for-zk
+      tls:
+        enabled: true
+    kafkaRest: 
+      authentication:
+        type: bearer 
+        bearer:
+          secretRef: kafka-mds-client
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: KafkaRestClass
+metadata:
+  name: default
+  namespace: confluent
+spec:
+  kafkaRest:
+    authentication:
+      type: bearer               
+      bearer:
+        secretRef: rest-credential
