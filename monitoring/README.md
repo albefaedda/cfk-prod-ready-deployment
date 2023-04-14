@@ -1,4 +1,13 @@
-## Monitoring with Prometheus and Grafana
+## Monitoring 
+
+For us to be able to monitor the Confluent Platform components, we need to add some additional configuration to the Confluent Platform components configuration in order to collect metrics from Prometheus.
+
+Once updated the components configuration, We can re-deploy them with the usual commands: 
+
+```
+kubectl apply -f monitoring/deployment/zk+brokers.yaml
+kubectl apply -f monitoring/deployment/other-cp-components.yaml
+```
 
 For the monitoring tools, we can deploy them to the same namespace or we can create a new namespace just for the monitoring for a separation of concerns. 
 
