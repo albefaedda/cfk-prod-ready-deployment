@@ -1,6 +1,13 @@
-# Confluent for Kubernetes - from Dev to Production ready deployment
+# Confluent for Kubernetes
 
-Deployment of Confluent for Kubernetes, step-by-step, PLAINTEXT -> SSL -> SASL/PLAIN + LDAP -> RBAC/MDS, with custom users for Confluent Platform components and added Monitoring with Prometheus and Grafana
+Deployment of Confluent for Kubernetes:
+- PLAINTEXT
+- SSL 
+- SASL/PLAIN + LDAP 
+- RBAC/MDS
+- Monitoring (Prometheus + Grafana)
+
+Using custom users names for Confluent Platform components and added Monitoring with Prometheus and Grafana.
 
 ## Prerequisites
 
