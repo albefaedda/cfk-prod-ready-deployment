@@ -97,13 +97,13 @@ ldifs:
     objectClass: simpleSecurityObject
     objectClass: organizationalRole
     cn: connect-dev
-  016_replicator.ldif: |-
+  016_replicator-dev.ldif: |-
     dn: cn=replicator,ou=system,ou=generic,ou=me,dc=myorg,dc=com
-    userPassword: replicator-secret
+    userPassword: rG4$h1SdF!wK
     description: replicator user
     objectClass: simpleSecurityObject
     objectClass: organizationalRole
-    cn: replicator
+    cn: replicator-dev
   017_adminrest-dev.ldif: |-
     dn: cn=adminrest-dev,ou=system,ou=generic,ou=me,dc=myorg,dc=com
     userPassword: ,=_PvxK94~VK
