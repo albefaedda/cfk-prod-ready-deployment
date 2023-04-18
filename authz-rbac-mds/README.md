@@ -208,17 +208,17 @@ kafka-console-consumer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
  <the messages in the topic will be shown here>
 ```
 
-
 Produce some Avro messages:
 
 ```sh
 kafka-avro-console-producer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
-  --topic <a-topic-name> --producer.config configs/ldap-config.properties
+  --topic test-avro-topic \
+  --producer.config clients/configs/ldap-config.properties \
   --property schema.registry.url=https://schemaregistry.myorg.com \
   --property value.schema="$(< clients/schema/example-schema.json)" \
-  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/schema-registry.pem \
+  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/sr.pem \
   --property schema.registry.ssl.truststore.type=PEM \
-  --property basic.auth.user.info="sr-user:sr-password" \
+  --property basic.auth.user.info='sr-user:sr-pwd' \
   --property basic.auth.credentials.source="USER_INFO"
  <write your messages here>
 ```
@@ -227,13 +227,13 @@ kafka-avro-console-producer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
 Consume some Avro messages:
 
 ```sh
-kafka-avro-console-consumer --bootstrap-server <your-kafka-bootstrap-server> \
-  --topic <a-topic-name> --from-beginning \
+kafka-avro-console-consumer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
+  --topic test-avro-topic --from-beginning \
+  --consumer.config clients/configs/ldap-config.properties \
   --property schema.registry.url=https://schemaregistry.myorg.com \
   --property value.schema="$(< clients/schema/example-schema.json)" \
   --property schema.registry.ssl.truststore.type=PEM \
-  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/schema-registry.pem \
-  --consumer.config configs/ldap-config.properties \
-  --property basic.auth.user.info="sr-user:sr-password" \
+  --property schema.registry.ssl.truststore.location=ssl-encryption/certs/generated/schema-registry/sr.pem \
+  --property basic.auth.user.info='sr-user:sr-pwd' \
   --property basic.auth.credentials.source="USER_INFO"
 ```

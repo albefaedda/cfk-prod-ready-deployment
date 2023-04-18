@@ -6,6 +6,7 @@ Deployment of Confluent for Kubernetes:
 - SASL/PLAIN + LDAP 
 - RBAC/MDS
 - Monitoring (Prometheus + Grafana)
+- Replicator (CFK to CC)
 
 Using custom users names for Confluent Platform components and added Monitoring with Prometheus and Grafana.
 
@@ -70,7 +71,7 @@ serviceAccount:
 
  ```
  
- Once your configuration is ready, you can install the operator with helm: 
+Once your configuration is ready, you can install the operator with helm (in this case we are installing version 0.581.34): 
 
 ```sh
 helm upgrade --install confluent-operator \
@@ -98,3 +99,4 @@ Installation steps:
 - [authentication with LDAP](authn-with-ldap/README.md)
 - [authorisation with RBAC/MDS](authz-rbac-mds/README.md)
 - [monitoring](monitoring/README.md)
+- [replicator] (replicator/README.md)

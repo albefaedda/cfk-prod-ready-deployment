@@ -295,7 +295,6 @@ kafka-console-consumer --bootstrap-server kafka-bootstrap.myorg.com:9092 \
  <the messages in the topic will be shown here>
 ```
 
-
 Produce some Avro messages:
 
 ```sh
