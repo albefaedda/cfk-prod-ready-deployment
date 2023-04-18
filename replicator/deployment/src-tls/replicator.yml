@@ -1,0 +1,53 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: replicator
+  namespace: destination
+spec:
+  name: replicator-1
+  class: "io.confluent.connect.replicator.ReplicatorSourceConnector"
+  taskMax: 4
+  configs:
+    topic.rename.format: "${topic}_replica"
+    topic.whitelist: "test-avro-topic"
+    confluent.license: ""
+    confluent.topic.replication.factor: "3"
+    confluent.topic.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    confluent.topic.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"VUTRQ5NQ6JKVERF6\" password=\"c1qecFxW3KxHWPEH2vFt/rlWExKKLpmtRhhgutCcL60wnfFDIu9wgAE6ArkT65Dz\";"
+    confluent.topic.sasl.mechanism: "PLAIN"
+    confluent.topic.security.protocol: "SASL_SSL"
+    
+    src.consumer.confluent.monitoring.interceptor.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+    
+    src.consumer.confluent.monitoring.interceptor.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"kafka-dev\" password=\"DOf;@|{U5xGd\";"
+    src.consumer.confluent.monitoring.interceptor.sasl.mechanism: "PLAIN"
+    src.consumer.confluent.monitoring.interceptor.security.protocol: "SASL_SSL"
+    src.consumer.group.id: "replicator"
+    src.consumer.interceptor.classes: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+    src.kafka.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+    
+    src.kafka.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"kafka-dev\" password=\"DOf;@|{U5xGd\";"
+    src.kafka.sasl.mechanism: "PLAIN"
+    src.kafka.security.protocol: "SASL_SSL"
+    src.kafka.ssl.truststore.location: "/mnt/sslcerts/src-kafka-tls-cert/truststore.p12"
+    src.kafka.ssl.truststore.password: "${file:/mnt/sslcerts/src-kafka-tls-cert/jksPassword.txt:jksPassword}"
+
+    src.key.converter: "io.confluent.connect.avro.AvroConverter"
+    src.key.converter.schema.registry.url: "https://schemaregistry.confluent.svc.cluster.local:8081"
+    src.value.converter: "io.confluent.connect.avro.AvroConverter"
+    src.value.converter.schema.registry.url: "https://schemaregistry.confluent.svc.cluster.local:8081"
+    src.schemaregistry.basic.auth.user.info: "schemaregistry-dev:#c!a0<=V0@XY"
+    src.schemaregistry.basic.auth.credentials.source: "USER_INFO"
+    src.schema.registry.ssl.truststore.location: "/mnt/sslcerts/src-sr-tls-cert/truststore.p12"
+    src.schema.registry.ssl.truststore.password: "${file:/mnt/sslcerts/src-sr-tls-cert/jksPassword.txt:jksPassword}"
+
+    dest.kafka.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    dest.kafka.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"VUTRQ5NQ6JKVERF6\" password=\"c1qecFxW3KxHWPEH2vFt/rlWExKKLpmtRhhgutCcL60wnfFDIu9wgAE6ArkT65Dz\";"
+    dest.kafka.sasl.mechanism: "PLAIN"
+    dest.kafka.security.protocol: "SASL_SSL"
+    
+    dest.key.converter: "io.confluent.connect.avro.AvroConverter"
+    dest.key.converter.schema.registry.url: "https://psrc-y5q2k.europe-west3.gcp.confluent.cloud"
+    dest.value.converter: "io.confluent.connect.avro.AvroConverter"
+    dest.value.converter.schema.registry.url: "https://psrc-y5q2k.europe-west3.gcp.confluent.cloud"

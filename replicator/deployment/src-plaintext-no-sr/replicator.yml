@@ -1,0 +1,42 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: replicator
+  namespace: destination
+spec:
+  name: replicator-1
+  class: "io.confluent.connect.replicator.ReplicatorSourceConnector"
+  taskMax: 4
+  configs:
+    topic.rename.format: "${topic}_replica"
+    topic.whitelist: "test-avro-topic"
+    confluent.license: ""
+
+    confluent.topic.replication.factor: "3"
+    confluent.topic.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    confluent.topic.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"VUTRQ5NQ6JKVERF6\" password=\"c1qecFxW3KxHWPEH2vFt/rlWExKKLpmtRhhgutCcL60wnfFDIu9wgAE6ArkT65Dz\";"
+    confluent.topic.sasl.mechanism: "PLAIN"
+    confluent.topic.security.protocol: "SASL_SSL"
+    
+    src.consumer.confluent.monitoring.interceptor.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+    src.consumer.group.id: "replicator"
+    src.consumer.interceptor.classes: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+    src.kafka.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+
+    src.key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    src.value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    src.key.converter.schemas.enable: "false"
+    src.value.converter.schemas.enable: "false"
+
+    dest.kafka.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    dest.kafka.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"VUTRQ5NQ6JKVERF6\" password=\"c1qecFxW3KxHWPEH2vFt/rlWExKKLpmtRhhgutCcL60wnfFDIu9wgAE6ArkT65Dz\";"
+    dest.kafka.sasl.mechanism: "PLAIN"
+    dest.kafka.security.protocol: "SASL_SSL"
+    
+    dest.key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    dest.value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    dest.key.converter.schemas.enable: "false"
+    dest.value.converter.schemas.enable: "false"
+
+    
