@@ -93,7 +93,7 @@ For the deployment of the Confluent Platform components, we split the yaml confi
 
 Note: I'm limiting the CPU/memory/storage resources to low values for all the components
 
-Installation steps:
+Installation modules:
 - [plaintext](plaintext/README.md)
 - [ssl encryption](ssl/README.md)
 - [authentication with LDAP](authn-with-ldap/README.md)
