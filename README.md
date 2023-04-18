@@ -99,4 +99,4 @@ Installation steps:
 - [authentication with LDAP](authn-with-ldap/README.md)
 - [authorisation with RBAC/MDS](authz-rbac-mds/README.md)
 - [monitoring](monitoring/README.md)
-- [replicator] (replicator/README.md)
+- [replicator](replicator/README.md)
