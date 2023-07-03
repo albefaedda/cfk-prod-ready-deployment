@@ -1,0 +1,46 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: replicator
+  namespace: confluent
+spec:
+  name: schemas-replicator
+  class: "io.confluent.connect.replicator.ReplicatorSourceConnector"
+  taskMax: 1
+  configs:
+
+    tasks.max: "1"
+
+    # source cluster connection info
+    src.kafka.bootstrap.servers: "kafka.confluent.svc.cluster.local:9071"
+
+    # destination cluster connection info
+    dest.kafka.ssl.endpoint.identification.algorithm: "https"
+    dest.kafka.sasl.mechanism: "PLAIN"
+    dest.kafka.request.timeout.ms: "20000"
+    dest.kafka.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    retry.backoff.ms: "500"
+    dest.kafka.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"H6GH5BWGNOJHORF7\" password=\"GpxvB26vHDqdTDyMuRWOR4rGvw6+hCT63xsOsY1jY0dazLJ4bV97wGsGpn17+QcS\";"
+    dest.kafka.security.protocol: "SASL_SSL"
+
+    confluent.topic.replication.factor: "3"
+    # Schema Registry migration topics to replicate from source to destination
+    # topic.whitelist indicates which topics are of interest to replicator
+    topic.whitelist: "_schemas_schemaregistry_confluent"
+    topic.rename.format: "${topic}"
+
+    src.consumer.group.id: "schemas-replicator-group"
+
+    # schema.registry.topic indicates which of the topics in the ``whitelist`` contains schemas
+    schema.registry.topic: "_schemas_schemaregistry_confluent"
+    schema.subject.translator.class: "io.confluent.connect.replicator.schemas.DefaultSubjectTranslator"
+    
+    # Connection settings for destination Confluent Cloud Schema Registry
+    schema.registry.url: "https://psrc-y5q2k.europe-west3.gcp.confluent.cloud"
+    schema.registry.client.basic.auth.credentials.source: "USER_INFO"
+    schema.registry.client.basic.auth.user.info: "D2TGXAOSF2WBC5DE:fEga5YhPfuzpr7tZExNtijKvG0pzuY1m2Vo/bp2RmH6AR7krg7wdnHDMRX1uI5Oj"
+
+
+
+    

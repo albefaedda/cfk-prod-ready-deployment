@@ -1,0 +1,36 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Connector
+metadata:
+  name: replicator
+  namespace: confluent
+spec:
+  name: data-replicator
+  class: "io.confluent.connect.replicator.ReplicatorSourceConnector"
+  taskMax: 4
+  configs:
+    topic.rename.format: "${topic}"
+    topic.whitelist: "avro-orders"
+    confluent.license: ""
+    confluent.topic.replication.factor: "3"
+    confluent.topic.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    confluent.topic.sasl.mechanism: "PLAIN"
+    confluent.topic.security.protocol: "SASL_SSL"
+    confluent.topic.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"H6GH5BWGNOJHORF7\" password=\"GpxvB26vHDqdTDyMuRWOR4rGvw6+hCT63xsOsY1jY0dazLJ4bV97wGsGpn17+QcS\";"
+
+    # src.consumer.confluent.monitoring.interceptor.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+    src.consumer.group.id: "data-replicator-group"
+    # src.consumer.interceptor.classes: "io.confluent.monitoring.clients.interceptor.MonitoringConsumerInterceptor"
+    src.kafka.bootstrap.servers: "kafka.confluent.svc.cluster.local:9092"
+
+    key.converter: io.confluent.connect.replicator.util.ByteArrayConverter
+    value.converter: io.confluent.connect.replicator.util.ByteArrayConverter
+    header.converter: io.confluent.connect.replicator.util.ByteArrayConverter
+
+    dest.kafka.ssl.endpoint.identification.algorithm: "https"
+    dest.kafka.bootstrap.servers: "pkc-l6wr6.europe-west2.gcp.confluent.cloud:9092"
+    dest.kafka.sasl.jaas.config: "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"H6GH5BWGNOJHORF7\" password=\"GpxvB26vHDqdTDyMuRWOR4rGvw6+hCT63xsOsY1jY0dazLJ4bV97wGsGpn17+QcS\";"
+    dest.kafka.sasl.mechanism: "PLAIN"
+    dest.kafka.security.protocol: "SASL_SSL"
+    dest.topic.replication.factor: "3"
+    

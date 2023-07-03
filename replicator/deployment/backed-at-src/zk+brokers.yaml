@@ -1,0 +1,84 @@
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    # if you're using a private registry, update these
+    application: confluentinc/cp-zookeeper:7.3.0        
+    init: confluentinc/confluent-init-container:2.5.0
+  podTemplate:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: zookeeper
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - kafka
+          topologyKey: kubernetes.io/hostname  
+  dataVolumeCapacity: 1Gi
+  logVolumeCapacity: 1Gi
+  storageClass:
+    name: production-storage-class
+---
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: kafka
+  namespace: confluent
+spec:
+  replicas: 3
+  image:
+    # if you're using a private registry, update these
+    application: confluentinc/cp-server:7.3.0   
+    init: confluentinc/confluent-init-container:2.5.0
+  podTemplate:
+    resources:
+      limits:
+        cpu: 1
+        memory: 1Gi
+      requests:
+        cpu: 1
+        memory: 1Gi
+    topologySpreadConstraints:
+    - maxSkew: 1
+      labelSelector:
+        matchLabels:
+          app: kafka
+      topologyKey: kubernetes.io/hostname
+      whenUnsatisfiable: DoNotSchedule
+    affinity:
+      podAntiAffinity:
+        requiredDuringSchedulingIgnoredDuringExecution:
+        - labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - zookeeper
+          topologyKey: kubernetes.io/hostname
+  dataVolumeCapacity: 2Gi
+  storageClass:
+    name: production-storage-class
+  dependencies:
+    zookeeper: 
+      endpoint: zookeeper.confluent.svc.cluster.local:2181

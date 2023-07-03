@@ -95,7 +95,7 @@ Note: I'm limiting the CPU/memory/storage resources to low values for all the co
 
 Installation modules:
 - [plaintext](plaintext/README.md)
-- [ssl encryption](ssl/README.md)
+- [ssl encryption](ssl-encryption/README.md)
 - [authentication with LDAP](authn-with-ldap/README.md)
 - [authorisation with RBAC/MDS](authz-rbac-mds/README.md)
 - [monitoring](monitoring/README.md)
